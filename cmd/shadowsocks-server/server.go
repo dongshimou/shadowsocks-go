@@ -43,7 +43,7 @@ var debug ss.DebugLog
 var sanitizeIps bool
 var udp bool
 var managerAddr string
-
+var remoteAddr string
 func getRequest(conn *ss.Conn) (host string, err error) {
 	ss.SetReadTimeout(conn)
 
@@ -445,6 +445,7 @@ func main() {
 	flag.BoolVar((*bool)(&sanitizeIps), "A", false, "anonymize client ip addresses in all output")
 	flag.BoolVar(&udp, "u", false, "UDP Relay")
 	flag.StringVar(&managerAddr, "manager-address", "", "shadowsocks manager listening address")
+	flag.StringVar(&remoteAddr,"remote-address","","shadowsocks will send stat to remote manager")
 	flag.Parse()
 
 	if printVer {
@@ -502,9 +503,39 @@ func main() {
 		go managerDaemon(conn)
 	}
 
+	if remoteAddr!=""{
+		addr, err := net.ResolveUDPAddr("udp", remoteAddr)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Can't resolve address: ", err)
+			os.Exit(1)
+		}
+		conn,err:=net.DialUDP("udp",nil,addr)
+		if err!=nil{
+			fmt.Fprintln(os.Stderr, "Error connect remoteAddr:", err)
+			os.Exit(1)
+		}
+		log.Printf("shadowsock connect udp addr %v ...\n", remoteAddr)
+		go sendHelloToRemote(conn,managerAddr,config.Method)
+	}
+
 	waitSignal()
 }
-
+func sendHelloToRemote(conn *net.UDPConn,manager,method string) {
+	defer conn.Close()
+	hi:=map[string]string{}
+	hi["manager"]=manager
+	hi["method"]=method
+	raw,err:=json.Marshal(&hi)
+	if err!=nil{
+		fmt.Sprintln("Failed to marshal hi",hi)
+		return
+	}
+	_,err=conn.Write(raw)
+	if err!=nil{
+		fmt.Sprintln("Failed to say hi to remote address",remoteAddr)
+		return
+	}
+}
 func managerDaemon(conn *net.UDPConn) {
 	// add a report address set for ping response
 	// according to https://github.com/shadowsocks/shadowsocks/wiki/Manage-Multiple-Users#example-code
