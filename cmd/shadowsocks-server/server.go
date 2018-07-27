@@ -533,19 +533,16 @@ func main() {
 func managerDaemon(conn *net.UDPConn) {
 	// add a report address set for ping response
 	// according to https://github.com/shadowsocks/shadowsocks/wiki/Manage-Multiple-Users#example-code
-	ctx := make(chan bool, 1)
-	defer close(ctx)
+	timer := time.Tick(10 * time.Second)
 	reportconnSet := make(map[string]*net.UDPAddr, 1024)
 	go func() {
-		timer := time.Tick(10 * time.Second)
 		for {
 			<-timer
 			switch {
-			case <-ctx:
-				return
 			default:
 				for _, addr := range reportconnSet {
 					res := reportStat()
+					fmt.Sprintln("report stat ->")
 					if len(res) == 0 {
 						continue
 					}
