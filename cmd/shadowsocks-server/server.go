@@ -539,7 +539,7 @@ func sendHelloToRemote(conn *net.UDPConn,manager,method string) {
 func managerDaemon(conn *net.UDPConn) {
 	// add a report address set for ping response
 	// according to https://github.com/shadowsocks/shadowsocks/wiki/Manage-Multiple-Users#example-code
-	timer := time.Tick(60 * time.Second)
+	timer := time.Tick(10 * time.Second)
 	reportconnSet := make(map[string]*net.UDPAddr, 1024)
 	go func() {
 		for {
