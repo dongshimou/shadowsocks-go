@@ -474,9 +474,10 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	if err = unifyPortPassword(config); err != nil {
-		os.Exit(1)
-	}
+	//不检查 端口密码
+	//if err = unifyPortPassword(config); err != nil {
+	//	os.Exit(1)
+	//}
 	if core > 0 {
 		runtime.GOMAXPROCS(core)
 	}
