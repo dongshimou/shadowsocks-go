@@ -277,7 +277,7 @@ func (pm *PasswdManager) updatePortPasswd(port, password string) {
 			return
 		}
 		log.Printf("closing port %s to update password\n", port)
-		pm.del(port)
+		pl.listener.Close()
 	}
 	// run will add the new port listener to passwdManager.
 	// So there maybe concurrent access to passwdManager and we need lock to protect it.
@@ -345,6 +345,7 @@ func waitSignal() {
 }
 
 func run(port, password string) {
+	time.Sleep(time.Second)
 	ln, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Printf("error listening port %v: %v\n", port, err)
@@ -587,6 +588,7 @@ func managerDaemon(conn *net.UDPConn) {
 			fmt.Fprintln(os.Stderr, "Failed to write UDP manage msg, error: ", err.Error())
 			continue
 		}
+		debug.Println(remote)
 	}
 }
 
