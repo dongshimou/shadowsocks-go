@@ -277,7 +277,7 @@ func (pm *PasswdManager) updatePortPasswd(port, password string) {
 			return
 		}
 		log.Printf("closing port %s to update password\n", port)
-		pl.listener.Close()
+		pm.del(port)
 	}
 	// run will add the new port listener to passwdManager.
 	// So there maybe concurrent access to passwdManager and we need lock to protect it.
