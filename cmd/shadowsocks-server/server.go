@@ -345,7 +345,6 @@ func waitSignal() {
 }
 
 func run(port, password string) {
-	time.Sleep(time.Second)
 	ln, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Printf("error listening port %v: %v\n", port, err)
